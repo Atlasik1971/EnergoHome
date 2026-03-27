@@ -141,17 +141,26 @@
       line-height:1.55;
     }
 
-    /* Две колонки: без горизонтальной прокрутки страницы — ячейки сетки могут сжиматься (minmax(0, …)) */
-    .layout{
+    /* Верхний ряд: параметры и итоги на одном уровне (один «экран решений») */
+    .dashboard{
       display:grid;
-      grid-template-columns:minmax(0, 1.35fr) minmax(280px, 0.65fr);
+      grid-template-columns:minmax(0, 1fr) minmax(0, 1fr);
       gap:24px;
-      align-items:start;
+      align-items:stretch;
+      margin-bottom:24px;
     }
-
-    /* Иначе широкая таблица «раздувает» левую колонку, и блок «Итоги» уезжает за край экрана */
-    .layout > .card{
+    .dashboard > .card{
       min-width:0;
+    }
+    /* Лёгкий акцент, чтобы пара «настройки — итоги» читалась как один блок */
+    .card--params{
+      border-top:3px solid var(--blue);
+    }
+    .card--results{
+      border-top:3px solid var(--green);
+    }
+    .card--params .hint{
+      margin-top:12px;
     }
 
     .card{
@@ -275,76 +284,186 @@
       background:var(--preset-hover-bg);
     }
 
-    /* Горизонтальный скролл только у таблицы внутри карточки, не у всей страницы */
-    .table-wrap{
+    /* Вкладки: ввод приборов | сводная таблица (все цифры видны, без обрезания) */
+    .tabs{
+      display:flex;
+      gap:10px;
+      margin:8px 0 16px;
+      flex-wrap:wrap;
+    }
+    .tabs__btn{
+      border:1px solid var(--line);
+      background:var(--preset-bg);
+      color:var(--text);
+      padding:10px 18px;
+      border-radius:12px;
+      font-weight:700;
+      font-size:14px;
+      cursor:pointer;
+      transition:background .2s, border-color .2s, color .2s;
+    }
+    .tabs__btn:hover{
+      border-color:var(--blue);
+    }
+    .tabs__btn.is-active{
+      background:var(--blue);
+      color:#fff;
+      border-color:var(--blue);
+    }
+    .tab-panel--hidden{
+      display:none !important;
+    }
+
+    /* Карточка одного прибора: крупные поля, числа не обрезаются */
+    .devices-list{
+      display:flex;
+      flex-direction:column;
+      gap:16px;
+    }
+    .device-card{
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:16px 18px;
+      background:var(--soft-bg);
+    }
+    .device-card__head{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      margin-bottom:14px;
+    }
+    .device-card__index{
+      font-weight:800;
+      font-size:15px;
+      color:var(--text);
+    }
+    .device-card__fields{
+      display:grid;
+      grid-template-columns:repeat(6, minmax(0, 1fr));
+      gap:12px 14px;
+    }
+    .device-field label{
+      display:block;
+      font-size:12px;
+      font-weight:700;
+      color:var(--muted);
+      margin-bottom:6px;
+    }
+    .device-field input,
+    .device-field select{
+      width:100%;
+      padding:11px 12px;
+      border:1px solid var(--line);
+      border-radius:12px;
+      font-size:15px;
+      min-height:46px;
+      background:var(--input-bg);
+      color:var(--text);
+      outline:none;
+    }
+    .device-field input:focus{
+      border-color:var(--blue);
+      box-shadow:0 0 0 3px rgba(37,99,235,.08);
+    }
+    .device-field--span6{ grid-column:span 6; }
+    .device-field--span3{ grid-column:span 3; }
+    .device-field--span2{ grid-column:span 2; }
+    @media (max-width:900px){
+      .device-card__fields{
+        grid-template-columns:repeat(2, minmax(0, 1fr));
+      }
+      .device-field--span6{ grid-column:span 2; }
+      .device-field--span3{ grid-column:span 2; }
+      .device-field--span2{ grid-column:span 1; }
+    }
+    @media (max-width:520px){
+      .device-card__fields{
+        grid-template-columns:1fr;
+      }
+      .device-field--span6,
+      .device-field--span3,
+      .device-field--span2{
+        grid-column:span 1;
+      }
+    }
+    .device-card__calc{
+      display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(160px, 1fr));
+      gap:10px 14px;
+      margin-top:14px;
+      padding-top:14px;
+      border-top:1px dashed var(--line);
+      font-size:13px;
+      color:var(--muted);
+    }
+    .device-card__calc > div > span:first-child{
+      display:block;
+      font-size:11px;
+      line-height:1.35;
+    }
+    .device-card__calc strong{
+      display:block;
+      margin-top:4px;
+      font-size:16px;
+      font-weight:800;
+      color:var(--text);
+      font-variant-numeric:tabular-nums;
+    }
+    .device-card .btn-danger{
+      padding:8px 14px;
+    }
+
+    /* Сводная таблица (вторая вкладка): читаемые колонки, прокрутка только у блока */
+    .detail-table-wrap{
       overflow-x:auto;
-      overflow-y:visible;
       max-width:100%;
       border:1px solid var(--line);
       border-radius:18px;
       -webkit-overflow-scrolling:touch;
     }
-
-    table{
-      width:100%;
-      min-width:0;
-      table-layout:fixed;
+    .detail-table{
+      width:max-content;
+      min-width:100%;
       border-collapse:collapse;
       background:var(--card);
+      font-size:14px;
     }
-
-    thead{
+    .detail-table thead{
       background:var(--table-head-bg);
     }
-
-    th, td{
-      padding:8px 6px;
+    .detail-table th,
+    .detail-table td{
+      padding:10px 14px;
       border-bottom:1px solid var(--line);
       text-align:left;
       vertical-align:middle;
-      font-size:12px;
-      word-wrap:break-word;
-      overflow-wrap:anywhere;
+      white-space:nowrap;
+      font-variant-numeric:tabular-nums;
     }
-
-    th{
-      font-size:10px;
+    .detail-table th:first-child,
+    .detail-table td:first-child{
+      white-space:normal;
+      max-width:220px;
+      min-width:140px;
+    }
+    .detail-table th{
+      font-size:11px;
       text-transform:uppercase;
-      letter-spacing:.03em;
+      letter-spacing:.04em;
       color:var(--muted);
-      line-height:1.25;
+    }
+    .detail-table tbody tr:last-child td{
+      border-bottom:none;
     }
 
-    tr:last-child td{border-bottom:none}
-
-    td input{
-      width:100%;
-      min-width:0;
-      padding:6px 6px;
-      border:1px solid var(--line);
-      border-radius:8px;
-      font-size:12px;
-      background:var(--input-bg);
-      color:var(--text);
-      outline:none;
+    .h3{
+      margin:22px 0 10px;
+      font-size:17px;
+      font-weight:800;
     }
-
-    /* Компактная колонка с кнопкой удаления */
-    th.col-del,
-    td.col-del{
-      width:44px;
-      max-width:44px;
-      text-align:center;
-      vertical-align:middle;
-    }
-    td.col-del button{
-      padding:8px 10px;
-      min-width:36px;
-    }
-
-    td input:focus{
-      border-color:var(--blue);
-      box-shadow:0 0 0 3px rgba(37,99,235,.08);
+    .card--analytics{
+      margin-top:24px;
     }
 
     .empty{
@@ -491,7 +610,7 @@
     }
 
     @media (max-width: 1100px){
-      .layout{
+      .dashboard{
         grid-template-columns:1fr;
       }
       .settings,
@@ -503,7 +622,6 @@
         font-size:28px;
       }
     }
-
     @media print{
       body{
         background:#fff;
@@ -527,8 +645,14 @@
       .site-nav{
         display:none !important;
       }
-      .layout{
+      .dashboard{
         grid-template-columns:1fr;
+      }
+      .tabs{
+        display:none;
+      }
+      .tab-panel--hidden{
+        display:block !important;
       }
       .card{
         box-shadow:none;
@@ -556,12 +680,12 @@
       </p>
     </section>
 
-    <div class="layout">
-      <!-- Якорь для ссылки с лендинга «сразу к расчёту» -->
-      <section class="card" id="start-calc">
-        <h2>1. Общие параметры</h2>
+    <!-- Параметры и итоги — один ряд, без «утопленных» настроек под таблицей -->
+    <div class="dashboard" id="start-calc">
+      <section class="card card--params">
+        <h2>Общие параметры</h2>
         <div class="note">
-          Укажите дневной и ночной тариф, сезонный коэффициент, режим проживания и запас по мощности.
+          Тарифы, коэффициенты и запас по мощности. Изменения сразу влияют на блок «Итоги» и карточки приборов.
         </div>
 
         <div class="settings">
@@ -587,7 +711,7 @@
               <option value="0.7">Частичное проживание</option>
               <option value="0.45">Только выходные</option>
               <option value="0.25">Редкое использование</option>
-            </select>
+             </select>
           </div>
 
           <div class="field">
@@ -602,61 +726,14 @@
         </div>
 
         <div class="hint">
-          Стоимость считается отдельно: дневное потребление × дневной тариф + ночное потребление × ночной тариф
-        </div>
-
-        <h2 style="margin-top:26px;">2. Быстрое добавление типовых приборов</h2>
-        <div class="note">
-          Нажмите на прибор, чтобы быстро добавить его в таблицу.
-        </div>
-        <div class="preset-grid" id="presetButtons"></div>
-
-        <div class="toolbar">
-          <button class="btn-primary" id="addRowBtn">+ Добавить прибор</button>
-          <button class="btn-secondary" id="recalcBtn">Пересчитать</button>
-          <button class="btn-warning" id="fillExampleBtn">Заполнить пример</button>
-          <button class="btn-success" id="printBtn">Печать / PDF</button>
-          <button class="btn-danger" id="clearBtn">Очистить всё</button>
-        </div>
-
-        <h2>3. Таблица приборов</h2>
-        <div class="note">
-          Для каждого прибора укажите отдельно часы работы <strong>днём</strong> и <strong>ночью</strong>.
-          Формула: <strong>Мощность × Количество × Часы × Дни / 1000</strong>.
-        </div>
-
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <!-- Короткие заголовки + table-layout:fixed — таблица помещается в колонку без расширения страницы -->
-                <th style="width:15%;">Прибор</th>
-                <th style="width:11%;">Комната</th>
-                <th style="width:8%;">Вт</th>
-                <th style="width:6%;">Шт</th>
-                <th style="width:7%;">Ч. день</th>
-                <th style="width:7%;">Ч. ночь</th>
-                <th style="width:7%;">Дней</th>
-                <th style="width:8%;">кВт·ч д</th>
-                <th style="width:8%;">кВт·ч н</th>
-                <th style="width:9%;">₽/мес</th>
-                <th style="width:6%;">%</th>
-                <th class="col-del" style="width:44px;"> </th>
-              </tr>
-            </thead>
-            <tbody id="devicesBody"></tbody>
-          </table>
-        </div>
-
-        <div class="empty" id="emptyState">
-          В таблице пока нет приборов. Добавьте строки вручную или используйте типовые приборы выше.
+          Стоимость: дневное потребление × дневной тариф + ночное × ночной тариф
         </div>
       </section>
 
-      <aside class="card">
+      <aside class="card card--results">
         <h2>Итоги расчёта</h2>
         <div class="note">
-          Справа показаны общий расход, отдельно дневное и ночное потребление, стоимость и разбивка по помещениям.
+          Ключевые показатели обновляются при любых правках ниже. График и разбивка по комнатам — в блоке «Аналитика».
         </div>
 
         <div class="stats">
@@ -721,21 +798,81 @@
         <div class="toolbar" style="margin-top:18px;">
           <button class="btn-success" id="downloadBtn">Скачать расчёт .txt</button>
         </div>
-
-        <div class="section-title">Разбивка по помещениям</div>
-        <div class="room-list" id="roomsList"></div>
-
-        <div class="section-title">График потребления</div>
-        <div class="chart-wrap">
-          <canvas id="energyChart" width="700" height="300"></canvas>
-        </div>
-
-        <div class="footer-note">
-          <strong>Важно:</strong> расчёт ориентировочный. Фактический расход зависит от температуры,
-          циклов включения оборудования, утепления дома, автоматики, сетевого напряжения и реального времени работы приборов.
-        </div>
       </aside>
     </div>
+
+    <section class="card card--devices">
+      <h2>Приборы и расход электроэнергии</h2>
+      <div class="note">
+        Ввод — в виде карточек (удобно для длинных чисел). Полная строка со всеми колонками — на вкладке «Сводная таблица».
+        Формула: <strong>Мощность × Количество × Часы × Дни / 1000</strong> (отдельно часы днём и ночью).
+      </div>
+
+      <h3 class="h3">Быстрое добавление типовых приборов</h3>
+      <div class="preset-grid" id="presetButtons"></div>
+
+      <div class="toolbar">
+        <button class="btn-primary" id="addRowBtn">+ Добавить прибор</button>
+        <button class="btn-secondary" id="recalcBtn">Пересчитать</button>
+        <button class="btn-warning" id="fillExampleBtn">Заполнить пример</button>
+        <button class="btn-success" id="printBtn">Печать / PDF</button>
+        <button class="btn-danger" id="clearBtn">Очистить всё</button>
+      </div>
+
+      <div class="tabs" role="tablist" aria-label="Режим просмотра приборов">
+        <button type="button" class="tabs__btn is-active" role="tab" aria-selected="true" id="tabBtnEdit" aria-controls="tab-panel-edit">Приборы</button>
+        <button type="button" class="tabs__btn" role="tab" aria-selected="false" id="tabBtnTable" aria-controls="tab-panel-table">Сводная таблица</button>
+      </div>
+
+      <div id="tab-panel-edit" class="tab-panel" role="tabpanel" aria-labelledby="tabBtnEdit">
+        <div class="devices-list" id="devicesList"></div>
+        <div class="empty" id="emptyState">
+          Пока нет приборов. Добавьте карточку кнопкой выше или выберите типовой прибор.
+        </div>
+      </div>
+
+      <div id="tab-panel-table" class="tab-panel tab-panel--hidden" role="tabpanel" aria-labelledby="tabBtnTable">
+        <p class="note">
+          Только просмотр: все поля и расчёты в одной таблице. Редактирование — на вкладке «Приборы».
+        </p>
+        <div class="detail-table-wrap">
+          <table class="detail-table">
+            <thead>
+              <tr>
+                <th>Прибор</th>
+                <th>Помещение</th>
+                <th>Мощность, Вт</th>
+                <th>Кол-во</th>
+                <th>Часов днём</th>
+                <th>Часов ночью</th>
+                <th>Дней / мес</th>
+                <th>кВт·ч день</th>
+                <th>кВт·ч ночь</th>
+                <th>₽ / мес</th>
+                <th>Доля %</th>
+              </tr>
+            </thead>
+            <tbody id="detailTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="card card--analytics">
+      <h2>Аналитика</h2>
+      <div class="section-title">Разбивка по помещениям</div>
+      <div class="room-list" id="roomsList"></div>
+
+      <div class="section-title">График потребления</div>
+      <div class="chart-wrap">
+        <canvas id="energyChart" width="700" height="300"></canvas>
+      </div>
+
+      <div class="footer-note">
+        <strong>Важно:</strong> расчёт ориентировочный. Фактический расход зависит от температуры,
+        циклов включения оборудования, утепления дома, автоматики, сетевого напряжения и реального времени работы приборов.
+      </div>
+    </section>
   </div>
 
   <!-- Кнопка переключения темы (фиксирована в правом нижнем углу viewport) -->
@@ -783,7 +920,7 @@
       { name: "Wi-Fi роутер", room: "Дом", power: 12, qty: 1, dayHours: 16, nightHours: 8, days: 30 }
     ];
 
-    const devicesBody = document.getElementById("devicesBody");
+    const devicesList = document.getElementById("devicesList");
     const emptyState = document.getElementById("emptyState");
     const roomsList = document.getElementById("roomsList");
     const presetButtons = document.getElementById("presetButtons");
@@ -860,22 +997,53 @@
       return input;
     }
 
-    function addDeviceRow(device = {}) {
-      const tr = document.createElement("tr");
+    function addDeviceField(grid, labelText, inputEl, spanClass) {
+      const wrap = document.createElement("div");
+      wrap.className = "device-field " + spanClass;
+      const lab = document.createElement("label");
+      lab.textContent = labelText;
+      wrap.appendChild(lab);
+      wrap.appendChild(inputEl);
+      grid.appendChild(wrap);
+    }
 
-      const nameTd = document.createElement("td");
-      const roomTd = document.createElement("td");
-      const powerTd = document.createElement("td");
-      const qtyTd = document.createElement("td");
-      const dayHoursTd = document.createElement("td");
-      const nightHoursTd = document.createElement("td");
-      const daysTd = document.createElement("td");
-      const dayKwhTd = document.createElement("td");
-      const nightKwhTd = document.createElement("td");
-      const costTd = document.createElement("td");
-      const shareTd = document.createElement("td");
-      const deleteTd = document.createElement("td");
-      deleteTd.className = "col-del";
+    function deviceCalcCell(label, valueClass) {
+      const d = document.createElement("div");
+      const s = document.createElement("span");
+      s.textContent = label;
+      const strong = document.createElement("strong");
+      strong.className = valueClass;
+      strong.textContent = "0";
+      d.appendChild(s);
+      d.appendChild(strong);
+      return d;
+    }
+
+    function addDeviceRow(device = {}) {
+      const card = document.createElement("article");
+      card.className = "device-card";
+
+      const head = document.createElement("div");
+      head.className = "device-card__head";
+      const idx = document.createElement("span");
+      idx.className = "device-card__index";
+      idx.textContent = "Прибор";
+      head.appendChild(idx);
+
+      const delBtn = document.createElement("button");
+      delBtn.type = "button";
+      delBtn.className = "btn-danger";
+      delBtn.textContent = "Удалить";
+      delBtn.title = "Удалить прибор из расчёта";
+      delBtn.addEventListener("click", function () {
+        card.remove();
+        calculateAll();
+      });
+      head.appendChild(delBtn);
+      card.appendChild(head);
+
+      const grid = document.createElement("div");
+      grid.className = "device-card__fields";
 
       const nameInput = createCellInput("text", device.name || "", "device-name");
       const roomInput = createCellInput("text", device.room || "", "device-room");
@@ -885,65 +1053,31 @@
       const nightHoursInput = createCellInput("number", device.nightHours ?? 0, "device-night-hours", "0", "0.1");
       const daysInput = createCellInput("number", device.days ?? 30, "device-days", "0", "1");
 
-      const dayKwhOutput = document.createElement("div");
-      dayKwhOutput.className = "row-day-kwh";
-      dayKwhOutput.textContent = "0";
+      addDeviceField(grid, "Название прибора", nameInput, "device-field--span6");
+      addDeviceField(grid, "Помещение", roomInput, "device-field--span6");
+      addDeviceField(grid, "Мощность, Вт", powerInput, "device-field--span2");
+      addDeviceField(grid, "Количество, шт.", qtyInput, "device-field--span2");
+      addDeviceField(grid, "Дней в месяц", daysInput, "device-field--span2");
+      addDeviceField(grid, "Часов работы днём (за сутки)", dayHoursInput, "device-field--span3");
+      addDeviceField(grid, "Часов работы ночью (за сутки)", nightHoursInput, "device-field--span3");
 
-      const nightKwhOutput = document.createElement("div");
-      nightKwhOutput.className = "row-night-kwh";
-      nightKwhOutput.textContent = "0";
+      card.appendChild(grid);
 
-      const costOutput = document.createElement("div");
-      costOutput.className = "row-cost";
-      costOutput.textContent = "0";
+      const foot = document.createElement("div");
+      foot.className = "device-card__calc";
+      foot.appendChild(deviceCalcCell("кВт·ч / мес (день), с коэфф.", "row-day-kwh"));
+      foot.appendChild(deviceCalcCell("кВт·ч / мес (ночь), с коэфф.", "row-night-kwh"));
+      foot.appendChild(deviceCalcCell("₽ / месяц, с коэфф.", "row-cost"));
+      foot.appendChild(deviceCalcCell("Доля от суммарного расхода", "row-share"));
+      card.appendChild(foot);
 
-      const shareOutput = document.createElement("div");
-      shareOutput.className = "row-share";
-      shareOutput.textContent = "0%";
-
-      const delBtn = document.createElement("button");
-      delBtn.type = "button";
-      delBtn.className = "btn-danger";
-      delBtn.textContent = "×";
-      delBtn.title = "Удалить строку";
-      delBtn.addEventListener("click", () => {
-        tr.remove();
-        calculateAll();
-      });
-
-      nameTd.appendChild(nameInput);
-      roomTd.appendChild(roomInput);
-      powerTd.appendChild(powerInput);
-      qtyTd.appendChild(qtyInput);
-      dayHoursTd.appendChild(dayHoursInput);
-      nightHoursTd.appendChild(nightHoursInput);
-      daysTd.appendChild(daysInput);
-      dayKwhTd.appendChild(dayKwhOutput);
-      nightKwhTd.appendChild(nightKwhOutput);
-      costTd.appendChild(costOutput);
-      shareTd.appendChild(shareOutput);
-      deleteTd.appendChild(delBtn);
-
-      tr.appendChild(nameTd);
-      tr.appendChild(roomTd);
-      tr.appendChild(powerTd);
-      tr.appendChild(qtyTd);
-      tr.appendChild(dayHoursTd);
-      tr.appendChild(nightHoursTd);
-      tr.appendChild(daysTd);
-      tr.appendChild(dayKwhTd);
-      tr.appendChild(nightKwhTd);
-      tr.appendChild(costTd);
-      tr.appendChild(shareTd);
-      tr.appendChild(deleteTd);
-
-      devicesBody.appendChild(tr);
+      devicesList.appendChild(card);
       calculateAll();
     }
 
     function getRowsData() {
-      const rows = [...devicesBody.querySelectorAll("tr")];
-      return rows.map(row => {
+      const cards = [...devicesList.querySelectorAll(".device-card")];
+      return cards.map(row => {
         const name = row.querySelector(".device-name").value.trim();
         const room = row.querySelector(".device-room").value.trim() || "Без помещения";
         const power = parseFloat(row.querySelector(".device-power").value) || 0;
@@ -968,8 +1102,44 @@
     }
 
     function clearAllRows() {
-      devicesBody.innerHTML = "";
+      devicesList.innerHTML = "";
       calculateAll();
+    }
+
+    function renderDetailTable(rowsData, rowTotals, seasonFactor, houseMode, totalMonthlyKwhRaw) {
+      const tb = document.getElementById("detailTableBody");
+      if (!tb) return;
+      tb.innerHTML = "";
+
+      rowsData.forEach((item, index) => {
+        const data = rowTotals[index];
+        if (!data) return;
+        const adjDayKwh = data.dayKwh * seasonFactor * houseMode;
+        const adjNightKwh = data.nightKwh * seasonFactor * houseMode;
+        const adjCost = data.rowCost * seasonFactor * houseMode;
+        const share = totalMonthlyKwhRaw > 0 ? (data.totalKwh / totalMonthlyKwhRaw) * 100 : 0;
+
+        const tr = document.createElement("tr");
+        const vals = [
+          item.name || "—",
+          item.room,
+          formatNumber(item.power, 0),
+          formatCompact(item.qty),
+          formatCompact(item.dayHours),
+          formatCompact(item.nightHours),
+          formatNumber(item.days, 0),
+          formatNumber(adjDayKwh, 2),
+          formatNumber(adjNightKwh, 2),
+          formatNumber(adjCost, 2),
+          formatNumber(share, 1) + "%"
+        ];
+        vals.forEach(function (text) {
+          const td = document.createElement("td");
+          td.textContent = text;
+          tr.appendChild(td);
+        });
+        tb.appendChild(tr);
+      });
     }
 
     function fillExample() {
@@ -1185,6 +1355,11 @@
 
       const totalMonthlyKwhRaw = totalDayKwhRaw + totalNightKwhRaw;
 
+      devicesList.querySelectorAll(".device-card").forEach(function (card, i) {
+        const t = card.querySelector(".device-card__index");
+        if (t) t.textContent = "Прибор " + (i + 1);
+      });
+
       rowsData.forEach((item, index) => {
         const data = rowTotals[index];
         const adjDayKwh = data.dayKwh * seasonFactor * houseMode;
@@ -1230,6 +1405,7 @@
 
       renderRoomsBreakdown(rowsData, seasonFactor, houseMode);
       drawChart(adjustedDayKwh, adjustedNightKwh, adjustedMonthlyKwh);
+      renderDetailTable(rowsData, rowTotals, seasonFactor, houseMode, totalMonthlyKwhRaw);
     }
 
     function downloadReport() {
@@ -1320,10 +1496,28 @@
     printBtn.addEventListener("click", () => window.print());
 
     clearBtn.addEventListener("click", () => {
-      if (confirm("Удалить все приборы из таблицы?")) {
+      if (confirm("Удалить все приборы из расчёта?")) {
         clearAllRows();
       }
     });
+
+    (function setupDeviceTabs() {
+      const btnEdit = document.getElementById("tabBtnEdit");
+      const btnTable = document.getElementById("tabBtnTable");
+      const panelEdit = document.getElementById("tab-panel-edit");
+      const panelTable = document.getElementById("tab-panel-table");
+      if (!btnEdit || !btnTable || !panelEdit || !panelTable) return;
+      function go(isEdit) {
+        btnEdit.classList.toggle("is-active", isEdit);
+        btnTable.classList.toggle("is-active", !isEdit);
+        btnEdit.setAttribute("aria-selected", isEdit ? "true" : "false");
+        btnTable.setAttribute("aria-selected", isEdit ? "false" : "true");
+        panelEdit.classList.toggle("tab-panel--hidden", !isEdit);
+        panelTable.classList.toggle("tab-panel--hidden", isEdit);
+      }
+      btnEdit.addEventListener("click", function () { go(true); });
+      btnTable.addEventListener("click", function () { go(false); });
+    })();
 
     renderPresetButtons();
 
