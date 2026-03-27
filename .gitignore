@@ -1,0 +1,17 @@
+# ОС
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Редакторы и IDE
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# Логи
+*.log
+npm-debug.log*
+
+# Временные файлы
+*.tmp
+*~

@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Калькулятор расхода электроэнергии в загородном доме</title>
+  <style>
+    :root{
+      --bg:#f3f6fb;
+      --card:#ffffff;
+      --text:#16202f;
+      --muted:#6b7280;
+      --line:#dde6f0;
+      --blue:#2563eb;
+      --blue-dark:#1d4ed8;
+      --green:#059669;
+      --orange:#d97706;
+      --red:#dc2626;
+      --shadow:0 12px 30px rgba(15,23,42,.08);
+      --radius:20px;
+    }
+
+    *{box-sizing:border-box}
+
+    body{
+      margin:0;
+      font-family:Arial, Helvetica, sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(circle at top right, rgba(37,99,235,.08), transparent 25%),
+        linear-gradient(180deg, #eef4ff 0%, var(--bg) 100%);
+    }
+
+    .container{
+      max-width:1440px;
+      margin:0 auto;
+      padding:24px;
+    }
+
+    .hero{
+      background:linear-gradient(135deg, #1d4ed8 0%, #2563eb 45%, #60a5fa 100%);
+      color:#fff;
+      border-radius:28px;
+      padding:28px;
+      box-shadow:var(--shadow);
+      margin-bottom:24px;
+    }
+
+    .hero h1{
+      margin:0 0 10px;
+      font-size:34px;
+      line-height:1.15;
+    }
+
+    .hero p{
+      margin:0;
+      max-width:980px;
+      font-size:16px;
+      opacity:.96;
+      line-height:1.55;
+    }
+
+    .layout{
+      display:grid;
+      grid-template-columns: 1.25fr .75fr;
+      gap:24px;
+      align-items:start;
+    }
+
+    .card{
+      background:var(--card);
+      border:1px solid rgba(221,230,240,.9);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:22px;
+    }
+
+    .card h2{
+      margin:0 0 10px;
+      font-size:23px;
+    }
+
+    .note{
+      color:var(--muted);
+      font-size:14px;
+      margin-bottom:16px;
+      line-height:1.5;
+    }
+
+    .settings{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:14px;
+      margin-bottom:10px;
+    }
+
+    .field{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+    }
+
+    .field label{
+      font-size:14px;
+      font-weight:700;
+    }
+
+    .field input,
+    .field select{
+      width:100%;
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:12px 14px;
+      font-size:15px;
+      background:#fff;
+      outline:none;
+      transition:.2s;
+    }
+
+    .field input:focus,
+    .field select:focus{
+      border-color:var(--blue);
+      box-shadow:0 0 0 4px rgba(37,99,235,.10);
+    }
+
+    .hint{
+      display:inline-block;
+      margin-top:8px;
+      padding:8px 12px;
+      border-radius:999px;
+      background:#eff6ff;
+      color:#1d4ed8;
+      font-size:12px;
+      font-weight:700;
+    }
+
+    .toolbar{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin:16px 0 18px;
+    }
+
+    button{
+      border:none;
+      border-radius:14px;
+      padding:12px 16px;
+      font-size:14px;
+      font-weight:700;
+      cursor:pointer;
+      transition:.2s;
+    }
+
+    button:hover{
+      transform:translateY(-1px);
+    }
+
+    .btn-primary{background:var(--blue);color:#fff}
+    .btn-primary:hover{background:var(--blue-dark)}
+    .btn-secondary{background:#eef2ff;color:#1e3a8a}
+    .btn-secondary:hover{background:#dfe7ff}
+    .btn-success{background:#ecfdf5;color:var(--green)}
+    .btn-success:hover{background:#d1fae5}
+    .btn-warning{background:#fff7ed;color:var(--orange)}
+    .btn-warning:hover{background:#ffedd5}
+    .btn-danger{background:#fef2f2;color:var(--red)}
+    .btn-danger:hover{background:#fee2e2}
+
+    .preset-grid{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:10px;
+      margin-bottom:16px;
+    }
+
+    .preset-grid button{
+      text-align:left;
+      border:1px solid var(--line);
+      background:#f8fafc;
+      color:#0f172a;
+      font-weight:600;
+      padding:12px 14px;
+    }
+
+    .preset-grid button:hover{
+      border-color:#bfdbfe;
+      background:#eff6ff;
+    }
+
+    .table-wrap{
+      overflow:auto;
+      border:1px solid var(--line);
+      border-radius:18px;
+    }
+
+    table{
+      width:100%;
+      min-width:1320px;
+      border-collapse:collapse;
+      background:#fff;
+    }
+
+    thead{
+      background:#f8fafc;
+    }
+
+    th, td{
+      padding:12px 10px;
+      border-bottom:1px solid var(--line);
+      text-align:left;
+      vertical-align:middle;
+      font-size:14px;
+    }
+
+    th{
+      font-size:12px;
+      text-transform:uppercase;
+      letter-spacing:.04em;
+      color:#475569;
+    }
+
+    tr:last-child td{border-bottom:none}
+
+    td input{
+      width:100%;
+      padding:10px 10px;
+      border:1px solid var(--line);
+      border-radius:10px;
+      font-size:14px;
+      outline:none;
+    }
+
+    td input:focus{
+      border-color:var(--blue);
+      box-shadow:0 0 0 3px rgba(37,99,235,.08);
+    }
+
+    .empty{
+      display:none;
+      margin-top:12px;
+      padding:14px;
+      border-radius:14px;
+      border:1px solid #fed7aa;
+      background:#fff7ed;
+      color:#9a3412;
+      font-size:14px;
+    }
+
+    .stats{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:14px;
+      margin-top:6px;
+    }
+
+    .stat{
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:16px;
+      background:linear-gradient(180deg,#fff 0%,#f8fbff 100%);
+    }
+
+    .stat-title{
+      font-size:12px;
+      color:var(--muted);
+      text-transform:uppercase;
+      letter-spacing:.04em;
+      font-weight:700;
+      margin-bottom:8px;
+    }
+
+    .stat-value{
+      font-size:28px;
+      font-weight:800;
+      line-height:1.1;
+    }
+
+    .stat-sub{
+      font-size:13px;
+      color:var(--muted);
+      margin-top:6px;
+    }
+
+    .summary{
+      margin:18px 0 0;
+      padding:0;
+      list-style:none;
+      display:grid;
+      gap:10px;
+    }
+
+    .summary li{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      border-bottom:1px dashed var(--line);
+      padding-bottom:10px;
+      font-size:15px;
+    }
+
+    .summary li strong{
+      white-space:nowrap;
+    }
+
+    .section-title{
+      margin:24px 0 12px;
+      font-size:19px;
+      font-weight:800;
+    }
+
+    .room-list{
+      display:grid;
+      gap:10px;
+      margin-top:8px;
+    }
+
+    .room-item{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:12px 14px;
+      background:#fbfdff;
+    }
+
+    .room-left{
+      min-width:0;
+    }
+
+    .room-name{
+      font-weight:700;
+      margin-bottom:4px;
+    }
+
+    .room-meta{
+      color:var(--muted);
+      font-size:13px;
+    }
+
+    .room-value{
+      font-weight:800;
+      font-size:16px;
+      white-space:nowrap;
+    }
+
+    .chart-wrap{
+      margin-top:14px;
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:14px;
+      background:#fcfdff;
+    }
+
+    canvas{
+      width:100%;
+      height:300px;
+      display:block;
+      background:#fff;
+      border-radius:12px;
+    }
+
+    .footer-note{
+      margin-top:18px;
+      font-size:13px;
+      color:var(--muted);
+      line-height:1.5;
+      padding:12px 14px;
+      border-radius:14px;
+      border:1px dashed var(--line);
+      background:#f8fafc;
+    }
+
+    @media (max-width: 1100px){
+      .layout{
+        grid-template-columns:1fr;
+      }
+      .settings,
+      .stats,
+      .preset-grid{
+        grid-template-columns:1fr;
+      }
+      .hero h1{
+        font-size:28px;
+      }
+    }
+
+    @media print{
+      body{
+        background:#fff;
+      }
+      .container{
+        max-width:100%;
+        padding:0;
+      }
+      .hero{
+        box-shadow:none;
+        margin-bottom:12px;
+      }
+      .toolbar,
+      .preset-grid button,
+      .btn-danger{
+        display:none !important;
+      }
+      .layout{
+        grid-template-columns:1fr;
+      }
+      .card{
+        box-shadow:none;
+        border:1px solid #d1d5db;
+        break-inside:avoid;
+      }
+      canvas{
+        height:260px !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <section class="hero">
+      <h1>Калькулятор расхода электроэнергии в загородном доме</h1>
+      <p>
+        Калькулятор учитывает дневной и ночной тариф, отдельно считает потребление по каждому периоду,
+        рассчитывает стоимость, пиковую нагрузку и структуру потребления по помещениям.
+      </p>
+    </section>
+
+    <div class="layout">
+      <section class="card">
+        <h2>1. Общие параметры</h2>
+        <div class="note">
+          Укажите дневной и ночной тариф, сезонный коэффициент, режим проживания и запас по мощности.
+        </div>
+
+        <div class="settings">
+          <div class="field">
+            <label for="dayTariff">Дневной тариф за 1 кВт·ч (₽)</label>
+            <input type="number" id="dayTariff" min="0" step="0.01" value="8.50">
+          </div>
+
+          <div class="field">
+            <label for="nightTariff">Ночной тариф за 1 кВт·ч (₽)</label>
+            <input type="number" id="nightTariff" min="0" step="0.01" value="4.20">
+          </div>
+
+          <div class="field">
+            <label for="seasonFactor">Сезонный коэффициент</label>
+            <input type="number" id="seasonFactor" min="0" step="0.01" value="1.00">
+          </div>
+
+          <div class="field">
+            <label for="houseMode">Режим проживания</label>
+            <select id="houseMode">
+              <option value="1">Постоянное проживание</option>
+              <option value="0.7">Частичное проживание</option>
+              <option value="0.45">Только выходные</option>
+              <option value="0.25">Редкое использование</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="reserve">Запас по нагрузке (%)</label>
+            <input type="number" id="reserve" min="0" step="1" value="15">
+          </div>
+
+          <div class="field">
+            <label for="nightHoursInfo">Подсказка по ночным часам</label>
+            <input type="text" id="nightHoursInfo" value="Например: 23:00–07:00" readonly>
+          </div>
+        </div>
+
+        <div class="hint">
+          Стоимость считается отдельно: дневное потребление × дневной тариф + ночное потребление × ночной тариф
+        </div>
+
+        <h2 style="margin-top:26px;">2. Быстрое добавление типовых приборов</h2>
+        <div class="note">
+          Нажмите на прибор, чтобы быстро добавить его в таблицу.
+        </div>
+        <div class="preset-grid" id="presetButtons"></div>
+
+        <div class="toolbar">
+          <button class="btn-primary" id="addRowBtn">+ Добавить прибор</button>
+          <button class="btn-secondary" id="recalcBtn">Пересчитать</button>
+          <button class="btn-warning" id="fillExampleBtn">Заполнить пример</button>
+          <button class="btn-success" id="printBtn">Печать / PDF</button>
+          <button class="btn-danger" id="clearBtn">Очистить всё</button>
+        </div>
+
+        <h2>3. Таблица приборов</h2>
+        <div class="note">
+          Для каждого прибора укажите отдельно часы работы <strong>днём</strong> и <strong>ночью</strong>.
+          Формула: <strong>Мощность × Количество × Часы × Дни / 1000</strong>.
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:16%;">Прибор</th>
+                <th style="width:12%;">Помещение</th>
+                <th style="width:9%;">Мощность (Вт)</th>
+                <th style="width:7%;">Кол-во</th>
+                <th style="width:8%;">Часов днём</th>
+                <th style="width:8%;">Часов ночью</th>
+                <th style="width:8%;">Дней / месяц</th>
+                <th style="width:9%;">кВт·ч день</th>
+                <th style="width:9%;">кВт·ч ночь</th>
+                <th style="width:8%;">₽ / месяц</th>
+                <th style="width:6%;">Доля</th>
+                <th style="width:4%;">Удалить</th>
+              </tr>
+            </thead>
+            <tbody id="devicesBody"></tbody>
+          </table>
+        </div>
+
+        <div class="empty" id="emptyState">
+          В таблице пока нет приборов. Добавьте строки вручную или используйте типовые приборы выше.
+        </div>
+      </section>
+
+      <aside class="card">
+        <h2>Итоги расчёта</h2>
+        <div class="note">
+          Справа показаны общий расход, отдельно дневное и ночное потребление, стоимость и разбивка по помещениям.
+        </div>
+
+        <div class="stats">
+          <div class="stat">
+            <div class="stat-title">Расход в день</div>
+            <div class="stat-value" id="dailyKwh">0</div>
+            <div class="stat-sub">кВт·ч / сутки</div>
+          </div>
+
+          <div class="stat">
+            <div class="stat-title">Расход в месяц</div>
+            <div class="stat-value" id="monthlyKwh">0</div>
+            <div class="stat-sub">кВт·ч / месяц</div>
+          </div>
+
+          <div class="stat">
+            <div class="stat-title">Дневное потребление</div>
+            <div class="stat-value" id="monthlyDayKwh">0</div>
+            <div class="stat-sub">кВт·ч / месяц</div>
+          </div>
+
+          <div class="stat">
+            <div class="stat-title">Ночное потребление</div>
+            <div class="stat-value" id="monthlyNightKwh">0</div>
+            <div class="stat-sub">кВт·ч / месяц</div>
+          </div>
+
+          <div class="stat">
+            <div class="stat-title">Стоимость в месяц</div>
+            <div class="stat-value" id="monthlyCost">0</div>
+            <div class="stat-sub">рублей / месяц</div>
+          </div>
+
+          <div class="stat">
+            <div class="stat-title">Стоимость в год</div>
+            <div class="stat-value" id="yearlyCost">0</div>
+            <div class="stat-sub">рублей / год</div>
+          </div>
+
+          <div class="stat">
+            <div class="stat-title">Расход в год</div>
+            <div class="stat-value" id="yearlyKwh">0</div>
+            <div class="stat-sub">кВт·ч / год</div>
+          </div>
+
+          <div class="stat">
+            <div class="stat-title">Пиковая нагрузка</div>
+            <div class="stat-value" id="peakLoad">0</div>
+            <div class="stat-sub">кВт с запасом</div>
+          </div>
+        </div>
+
+        <ul class="summary">
+          <li><span>Всего приборов</span><strong id="totalDevices">0</strong></li>
+          <li><span>Средний расход в сутки</span><strong id="avgDay">0 кВт·ч</strong></li>
+          <li><span>Дневной тариф</span><strong id="dayTariffInfo">0 ₽/кВт·ч</strong></li>
+          <li><span>Ночной тариф</span><strong id="nightTariffInfo">0 ₽/кВт·ч</strong></li>
+          <li><span>Сезонный коэффициент</span><strong id="seasonInfo">1</strong></li>
+          <li><span>Режим проживания</span><strong id="modeInfo">—</strong></li>
+        </ul>
+
+        <div class="toolbar" style="margin-top:18px;">
+          <button class="btn-success" id="downloadBtn">Скачать расчёт .txt</button>
+        </div>
+
+        <div class="section-title">Разбивка по помещениям</div>
+        <div class="room-list" id="roomsList"></div>
+
+        <div class="section-title">График потребления</div>
+        <div class="chart-wrap">
+          <canvas id="energyChart" width="700" height="300"></canvas>
+        </div>
+
+        <div class="footer-note">
+          <strong>Важно:</strong> расчёт ориентировочный. Фактический расход зависит от температуры,
+          циклов включения оборудования, утепления дома, автоматики, сетевого напряжения и реального времени работы приборов.
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <script>
+    /*
+      =====================================================================
+      КАЛЬКУЛЯТОР С ДНЕВНЫМ И НОЧНЫМ ТАРИФОМ
+      ---------------------------------------------------------------------
+      ЛОГИКА:
+      1. Для каждого прибора считаем отдельно:
+         dayKwh   = (power * qty * dayHours   * days) / 1000
+         nightKwh = (power * qty * nightHours * days) / 1000
+
+      2. Стоимость по прибору:
+         rowCost = (dayKwh * dayTariff) + (nightKwh * nightTariff)
+
+      3. После этого применяем:
+         seasonFactor
+         houseMode
+
+      4. Итог:
+         totalMonthlyKwh = (day + night) * коэффициенты
+         totalMonthlyCost = стоимость * коэффициенты
+
+      Пользователь может целиком вставить код в HTML-редактор.
+      =====================================================================
+    */
+
+    const PRESETS = [
+      { name: "Холодильник", room: "Кухня", power: 150, qty: 1, dayHours: 16, nightHours: 8, days: 30 },
+      { name: "Электрочайник", room: "Кухня", power: 2000, qty: 1, dayHours: 0.3, nightHours: 0, days: 30 },
+      { name: "Микроволновка", room: "Кухня", power: 1200, qty: 1, dayHours: 0.4, nightHours: 0, days: 25 },
+      { name: "Электроплита", room: "Кухня", power: 3000, qty: 1, dayHours: 1.2, nightHours: 0.3, days: 30 },
+      { name: "Посудомоечная машина", room: "Кухня", power: 1800, qty: 1, dayHours: 0.2, nightHours: 1.0, days: 20 },
+      { name: "Стиральная машина", room: "Прачечная", power: 2000, qty: 1, dayHours: 0.2, nightHours: 0.8, days: 12 },
+      { name: "Бойлер", room: "Санузел", power: 1500, qty: 1, dayHours: 1.5, nightHours: 1.5, days: 30 },
+      { name: "Насос скважины", room: "Техпомещение", power: 1000, qty: 1, dayHours: 1.2, nightHours: 0.3, days: 30 },
+      { name: "Тёплый пол", room: "Санузел", power: 800, qty: 1, dayHours: 2, nightHours: 4, days: 30 },
+      { name: "Конвектор", room: "Гостиная", power: 2000, qty: 2, dayHours: 2, nightHours: 3, days: 30 },
+      { name: "Телевизор", room: "Гостиная", power: 120, qty: 1, dayHours: 4, nightHours: 0, days: 30 },
+      { name: "Освещение LED", room: "Дом", power: 12, qty: 15, dayHours: 1, nightHours: 4, days: 30 },
+      { name: "Компьютер", room: "Кабинет", power: 300, qty: 1, dayHours: 6, nightHours: 0, days: 24 },
+      { name: "Wi-Fi роутер", room: "Дом", power: 12, qty: 1, dayHours: 16, nightHours: 8, days: 30 }
+    ];
+
+    const devicesBody = document.getElementById("devicesBody");
+    const emptyState = document.getElementById("emptyState");
+    const roomsList = document.getElementById("roomsList");
+    const presetButtons = document.getElementById("presetButtons");
+
+    const dayTariffInput = document.getElementById("dayTariff");
+    const nightTariffInput = document.getElementById("nightTariff");
+    const seasonFactorInput = document.getElementById("seasonFactor");
+    const houseModeSelect = document.getElementById("houseMode");
+    const reserveInput = document.getElementById("reserve");
+
+    const dailyKwhEl = document.getElementById("dailyKwh");
+    const monthlyKwhEl = document.getElementById("monthlyKwh");
+    const monthlyDayKwhEl = document.getElementById("monthlyDayKwh");
+    const monthlyNightKwhEl = document.getElementById("monthlyNightKwh");
+    const yearlyKwhEl = document.getElementById("yearlyKwh");
+    const monthlyCostEl = document.getElementById("monthlyCost");
+    const yearlyCostEl = document.getElementById("yearlyCost");
+    const peakLoadEl = document.getElementById("peakLoad");
+
+    const totalDevicesEl = document.getElementById("totalDevices");
+    const avgDayEl = document.getElementById("avgDay");
+    const dayTariffInfoEl = document.getElementById("dayTariffInfo");
+    const nightTariffInfoEl = document.getElementById("nightTariffInfo");
+    const seasonInfoEl = document.getElementById("seasonInfo");
+    const modeInfoEl = document.getElementById("modeInfo");
+
+    const addRowBtn = document.getElementById("addRowBtn");
+    const recalcBtn = document.getElementById("recalcBtn");
+    const fillExampleBtn = document.getElementById("fillExampleBtn");
+    const clearBtn = document.getElementById("clearBtn");
+    const printBtn = document.getElementById("printBtn");
+    const downloadBtn = document.getElementById("downloadBtn");
+
+    const chartCanvas = document.getElementById("energyChart");
+    const ctx = chartCanvas.getContext("2d");
+
+    function formatNumber(value, digits = 2) {
+      return Number(value || 0).toLocaleString("ru-RU", {
+        minimumFractionDigits: digits,
+        maximumFractionDigits: digits
+      });
+    }
+
+    function formatCompact(value) {
+      return Number(value || 0).toLocaleString("ru-RU", {
+        maximumFractionDigits: 2
+      });
+    }
+
+    function getModeLabel() {
+      const option = houseModeSelect.options[houseModeSelect.selectedIndex];
+      return option ? option.textContent : "—";
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function createCellInput(type, value, className = "", min = "", step = "") {
+      const input = document.createElement("input");
+      input.type = type;
+      input.value = value;
+      if (className) input.className = className;
+      if (min !== "") input.min = min;
+      if (step !== "") input.step = step;
+      input.addEventListener("input", calculateAll);
+      return input;
+    }
+
+    function addDeviceRow(device = {}) {
+      const tr = document.createElement("tr");
+
+      const nameTd = document.createElement("td");
+      const roomTd = document.createElement("td");
+      const powerTd = document.createElement("td");
+      const qtyTd = document.createElement("td");
+      const dayHoursTd = document.createElement("td");
+      const nightHoursTd = document.createElement("td");
+      const daysTd = document.createElement("td");
+      const dayKwhTd = document.createElement("td");
+      const nightKwhTd = document.createElement("td");
+      const costTd = document.createElement("td");
+      const shareTd = document.createElement("td");
+      const deleteTd = document.createElement("td");
+
+      const nameInput = createCellInput("text", device.name || "", "device-name");
+      const roomInput = createCellInput("text", device.room || "", "device-room");
+      const powerInput = createCellInput("number", device.power ?? 100, "device-power", "0", "1");
+      const qtyInput = createCellInput("number", device.qty ?? 1, "device-qty", "0", "1");
+      const dayHoursInput = createCellInput("number", device.dayHours ?? 1, "device-day-hours", "0", "0.1");
+      const nightHoursInput = createCellInput("number", device.nightHours ?? 0, "device-night-hours", "0", "0.1");
+      const daysInput = createCellInput("number", device.days ?? 30, "device-days", "0", "1");
+
+      const dayKwhOutput = document.createElement("div");
+      dayKwhOutput.className = "row-day-kwh";
+      dayKwhOutput.textContent = "0";
+
+      const nightKwhOutput = document.createElement("div");
+      nightKwhOutput.className = "row-night-kwh";
+      nightKwhOutput.textContent = "0";
+
+      const costOutput = document.createElement("div");
+      costOutput.className = "row-cost";
+      costOutput.textContent = "0";
+
+      const shareOutput = document.createElement("div");
+      shareOutput.className = "row-share";
+      shareOutput.textContent = "0%";
+
+      const delBtn = document.createElement("button");
+      delBtn.type = "button";
+      delBtn.className = "btn-danger";
+      delBtn.textContent = "×";
+      delBtn.title = "Удалить строку";
+      delBtn.addEventListener("click", () => {
+        tr.remove();
+        calculateAll();
+      });
+
+      nameTd.appendChild(nameInput);
+      roomTd.appendChild(roomInput);
+      powerTd.appendChild(powerInput);
+      qtyTd.appendChild(qtyInput);
+      dayHoursTd.appendChild(dayHoursInput);
+      nightHoursTd.appendChild(nightHoursInput);
+      daysTd.appendChild(daysInput);
+      dayKwhTd.appendChild(dayKwhOutput);
+      nightKwhTd.appendChild(nightKwhOutput);
+      costTd.appendChild(costOutput);
+      shareTd.appendChild(shareOutput);
+      deleteTd.appendChild(delBtn);
+
+      tr.appendChild(nameTd);
+      tr.appendChild(roomTd);
+      tr.appendChild(powerTd);
+      tr.appendChild(qtyTd);
+      tr.appendChild(dayHoursTd);
+      tr.appendChild(nightHoursTd);
+      tr.appendChild(daysTd);
+      tr.appendChild(dayKwhTd);
+      tr.appendChild(nightKwhTd);
+      tr.appendChild(costTd);
+      tr.appendChild(shareTd);
+      tr.appendChild(deleteTd);
+
+      devicesBody.appendChild(tr);
+      calculateAll();
+    }
+
+    function getRowsData() {
+      const rows = [...devicesBody.querySelectorAll("tr")];
+      return rows.map(row => {
+        const name = row.querySelector(".device-name").value.trim();
+        const room = row.querySelector(".device-room").value.trim() || "Без помещения";
+        const power = parseFloat(row.querySelector(".device-power").value) || 0;
+        const qty = parseFloat(row.querySelector(".device-qty").value) || 0;
+        const dayHours = parseFloat(row.querySelector(".device-day-hours").value) || 0;
+        const nightHours = parseFloat(row.querySelector(".device-night-hours").value) || 0;
+        const days = parseFloat(row.querySelector(".device-days").value) || 0;
+
+        return { row, name, room, power, qty, dayHours, nightHours, days };
+      });
+    }
+
+    function renderPresetButtons() {
+      presetButtons.innerHTML = "";
+      PRESETS.forEach(preset => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.textContent = `${preset.name} — ${preset.power} Вт`;
+        btn.addEventListener("click", () => addDeviceRow(preset));
+        presetButtons.appendChild(btn);
+      });
+    }
+
+    function clearAllRows() {
+      devicesBody.innerHTML = "";
+      calculateAll();
+    }
+
+    function fillExample() {
+      clearAllRows();
+      [
+        { name: "Холодильник", room: "Кухня", power: 150, qty: 1, dayHours: 16, nightHours: 8, days: 30 },
+        { name: "Освещение LED", room: "Дом", power: 12, qty: 20, dayHours: 1, nightHours: 4, days: 30 },
+        { name: "Телевизор", room: "Гостиная", power: 120, qty: 1, dayHours: 4, nightHours: 0, days: 30 },
+        { name: "Бойлер", room: "Санузел", power: 1500, qty: 1, dayHours: 1.5, nightHours: 1.5, days: 30 },
+        { name: "Насос скважины", room: "Техпомещение", power: 1000, qty: 1, dayHours: 1.2, nightHours: 0.3, days: 30 },
+        { name: "Электрочайник", room: "Кухня", power: 2000, qty: 1, dayHours: 0.3, nightHours: 0, days: 30 },
+        { name: "Конвектор", room: "Гостиная", power: 2000, qty: 2, dayHours: 2, nightHours: 3, days: 30 },
+        { name: "Стиральная машина", room: "Прачечная", power: 2000, qty: 1, dayHours: 0.2, nightHours: 0.8, days: 12 }
+      ].forEach(addDeviceRow);
+    }
+
+    function renderRoomsBreakdown(rowsData, seasonFactor, houseMode) {
+      roomsList.innerHTML = "";
+
+      const rooms = {};
+
+      rowsData.forEach(item => {
+        const dayKwh = (item.power * item.qty * item.dayHours * item.days) / 1000;
+        const nightKwh = (item.power * item.qty * item.nightHours * item.days) / 1000;
+        const totalKwh = (dayKwh + nightKwh) * seasonFactor * houseMode;
+
+        if (!rooms[item.room]) {
+          rooms[item.room] = { kwh: 0, count: 0 };
+        }
+
+        rooms[item.room].kwh += totalKwh;
+        rooms[item.room].count += 1;
+      });
+
+      const entries = Object.entries(rooms).sort((a, b) => b[1].kwh - a[1].kwh);
+
+      if (entries.length === 0) {
+        const div = document.createElement("div");
+        div.className = "room-item";
+        div.innerHTML = '<div class="room-left"><div class="room-name">Нет данных</div><div class="room-meta">Добавьте приборы для расчёта</div></div><div class="room-value">0 кВт·ч</div>';
+        roomsList.appendChild(div);
+        return;
+      }
+
+      entries.forEach(([roomName, data]) => {
+        const item = document.createElement("div");
+        item.className = "room-item";
+        item.innerHTML = `
+          <div class="room-left">
+            <div class="room-name">${escapeHtml(roomName)}</div>
+            <div class="room-meta">Приборов: ${data.count}</div>
+          </div>
+          <div class="room-value">${formatNumber(data.kwh, 2)} кВт·ч</div>
+        `;
+        roomsList.appendChild(item);
+      });
+    }
+
+    function roundRect(ctx, x, y, width, height, radius, fill, stroke) {
+      if (typeof radius === "number") {
+        radius = { tl: radius, tr: radius, br: radius, bl: radius };
+      } else {
+        radius = { tl: 0, tr: 0, br: 0, bl: 0, ...radius };
+      }
+
+      ctx.beginPath();
+      ctx.moveTo(x + radius.tl, y);
+      ctx.lineTo(x + width - radius.tr, y);
+      ctx.quadraticCurveTo(x + width, y, x + width, y + radius.tr);
+      ctx.lineTo(x + width, y + height - radius.br);
+      ctx.quadraticCurveTo(x + width, y + height, x + width - radius.br, y + height);
+      ctx.lineTo(x + radius.bl, y + height);
+      ctx.quadraticCurveTo(x, y + height, x, y + height - radius.bl);
+      ctx.lineTo(x, y + radius.tl);
+      ctx.quadraticCurveTo(x, y, x + radius.tl, y);
+      ctx.closePath();
+
+      if (fill) ctx.fill();
+      if (stroke) ctx.stroke();
+    }
+
+    function drawChart(dayValue, nightValue, totalValue) {
+      const canvas = chartCanvas;
+      const context = ctx;
+      const width = canvas.width;
+      const height = canvas.height;
+
+      context.clearRect(0, 0, width, height);
+
+      const labels = ["День", "Ночь", "Итого"];
+      const values = [dayValue, nightValue, totalValue];
+      const maxValue = Math.max(...values, 1);
+
+      const chartX = 70;
+      const chartY = 20;
+      const chartWidth = width - 100;
+      const chartHeight = height - 70;
+      const barWidth = 110;
+      const gap = 80;
+
+      context.strokeStyle = "#dbe3ee";
+      context.lineWidth = 1;
+
+      for (let i = 0; i <= 4; i++) {
+        const y = chartY + (chartHeight / 4) * i;
+        context.beginPath();
+        context.moveTo(chartX, y);
+        context.lineTo(chartX + chartWidth, y);
+        context.stroke();
+      }
+
+      context.fillStyle = "#6b7280";
+      context.font = "12px Arial";
+
+      for (let i = 0; i <= 4; i++) {
+        const value = maxValue - (maxValue / 4) * i;
+        const y = chartY + (chartHeight / 4) * i;
+        context.fillText(formatCompact(value), 10, y + 4);
+      }
+
+      const colors = ["#60a5fa", "#1d4ed8", "#059669"];
+
+      values.forEach((value, index) => {
+        const x = chartX + 40 + index * (barWidth + gap);
+        const barHeight = (value / maxValue) * (chartHeight - 10);
+        const y = chartY + chartHeight - barHeight;
+
+        context.fillStyle = colors[index];
+        roundRect(context, x, y, barWidth, barHeight, 14, true, false);
+
+        context.fillStyle = "#16202f";
+        context.font = "bold 13px Arial";
+        context.textAlign = "center";
+        context.fillText(formatCompact(value), x + barWidth / 2, y - 10);
+
+        context.fillStyle = "#475569";
+        context.font = "13px Arial";
+        context.fillText(labels[index], x + barWidth / 2, chartY + chartHeight + 22);
+      });
+
+      context.textAlign = "left";
+    }
+
+    function calculateAll() {
+      const dayTariff = parseFloat(dayTariffInput.value) || 0;
+      const nightTariff = parseFloat(nightTariffInput.value) || 0;
+      const seasonFactor = parseFloat(seasonFactorInput.value) || 1;
+      const houseMode = parseFloat(houseModeSelect.value) || 1;
+      const reservePercent = parseFloat(reserveInput.value) || 0;
+
+      const rowsData = getRowsData();
+
+      let totalDayKwhRaw = 0;
+      let totalNightKwhRaw = 0;
+      let totalMonthlyCostRaw = 0;
+      let totalPeakWatts = 0;
+      let devicesCount = 0;
+
+      const rowTotals = [];
+
+      rowsData.forEach(item => {
+        const dayKwh = (item.power * item.qty * item.dayHours * item.days) / 1000;
+        const nightKwh = (item.power * item.qty * item.nightHours * item.days) / 1000;
+        const rowCost = (dayKwh * dayTariff) + (nightKwh * nightTariff);
+        const totalKwh = dayKwh + nightKwh;
+
+        rowTotals.push({ dayKwh, nightKwh, rowCost, totalKwh });
+
+        totalDayKwhRaw += dayKwh;
+        totalNightKwhRaw += nightKwh;
+        totalMonthlyCostRaw += rowCost;
+        totalPeakWatts += item.power * item.qty;
+
+        if (item.name || item.power || item.qty || item.dayHours || item.nightHours || item.days) {
+          devicesCount++;
+        }
+      });
+
+      const totalMonthlyKwhRaw = totalDayKwhRaw + totalNightKwhRaw;
+
+      rowsData.forEach((item, index) => {
+        const data = rowTotals[index];
+        const adjDayKwh = data.dayKwh * seasonFactor * houseMode;
+        const adjNightKwh = data.nightKwh * seasonFactor * houseMode;
+        const adjCost = data.rowCost * seasonFactor * houseMode;
+        const share = totalMonthlyKwhRaw > 0 ? (data.totalKwh / totalMonthlyKwhRaw) * 100 : 0;
+
+        item.row.querySelector(".row-day-kwh").textContent = formatNumber(adjDayKwh, 2);
+        item.row.querySelector(".row-night-kwh").textContent = formatNumber(adjNightKwh, 2);
+        item.row.querySelector(".row-cost").textContent = formatNumber(adjCost, 2);
+        item.row.querySelector(".row-share").textContent = formatNumber(share, 1) + "%";
+      });
+
+      const adjustedDayKwh = totalDayKwhRaw * seasonFactor * houseMode;
+      const adjustedNightKwh = totalNightKwhRaw * seasonFactor * houseMode;
+      const adjustedMonthlyKwh = adjustedDayKwh + adjustedNightKwh;
+      const adjustedMonthlyCost = totalMonthlyCostRaw * seasonFactor * houseMode;
+
+      const dailyKwh = adjustedMonthlyKwh / 30;
+      const yearlyKwh = adjustedMonthlyKwh * 12;
+      const yearlyCost = adjustedMonthlyCost * 12;
+
+      const peakKw = totalPeakWatts / 1000;
+      const peakKwWithReserve = peakKw * (1 + reservePercent / 100);
+
+      dailyKwhEl.textContent = formatNumber(dailyKwh, 2);
+      monthlyKwhEl.textContent = formatNumber(adjustedMonthlyKwh, 2);
+      monthlyDayKwhEl.textContent = formatNumber(adjustedDayKwh, 2);
+      monthlyNightKwhEl.textContent = formatNumber(adjustedNightKwh, 2);
+      yearlyKwhEl.textContent = formatNumber(yearlyKwh, 2);
+      monthlyCostEl.textContent = formatNumber(adjustedMonthlyCost, 2);
+      yearlyCostEl.textContent = formatNumber(yearlyCost, 2);
+      peakLoadEl.textContent = formatNumber(peakKwWithReserve, 2);
+
+      totalDevicesEl.textContent = devicesCount;
+      avgDayEl.textContent = formatNumber(dailyKwh, 2) + " кВт·ч";
+      dayTariffInfoEl.textContent = formatNumber(dayTariff, 2) + " ₽/кВт·ч";
+      nightTariffInfoEl.textContent = formatNumber(nightTariff, 2) + " ₽/кВт·ч";
+      seasonInfoEl.textContent = formatNumber(seasonFactor, 2);
+      modeInfoEl.textContent = getModeLabel();
+
+      emptyState.style.display = rowsData.length === 0 ? "block" : "none";
+
+      renderRoomsBreakdown(rowsData, seasonFactor, houseMode);
+      drawChart(adjustedDayKwh, adjustedNightKwh, adjustedMonthlyKwh);
+    }
+
+    function downloadReport() {
+      const dayTariff = parseFloat(dayTariffInput.value) || 0;
+      const nightTariff = parseFloat(nightTariffInput.value) || 0;
+      const seasonFactor = parseFloat(seasonFactorInput.value) || 1;
+      const houseMode = parseFloat(houseModeSelect.value) || 1;
+      const reservePercent = parseFloat(reserveInput.value) || 0;
+      const mode = getModeLabel();
+      const rowsData = getRowsData();
+
+      let report = "";
+      report += "КАЛЬКУЛЯТОР ЭЛЕКТРОЭНЕРГИИ С ДНЕВНЫМ И НОЧНЫМ ТАРИФОМ\n";
+      report += "=====================================================\n\n";
+      report += `Дневной тариф: ${formatNumber(dayTariff, 2)} ₽/кВт·ч\n`;
+      report += `Ночной тариф: ${formatNumber(nightTariff, 2)} ₽/кВт·ч\n`;
+      report += `Сезонный коэффициент: ${formatNumber(seasonFactor, 2)}\n`;
+      report += `Режим проживания: ${mode}\n`;
+      report += `Запас по нагрузке: ${formatNumber(reservePercent, 0)}%\n\n`;
+
+      report += "ПЕРЕЧЕНЬ ПРИБОРОВ\n";
+      report += "-----------------------------------------------------\n";
+
+      rowsData.forEach((item, index) => {
+        const dayKwh = (item.power * item.qty * item.dayHours * item.days) / 1000;
+        const nightKwh = (item.power * item.qty * item.nightHours * item.days) / 1000;
+        const adjDayKwh = dayKwh * seasonFactor * houseMode;
+        const adjNightKwh = nightKwh * seasonFactor * houseMode;
+        const monthlyCost = ((dayKwh * dayTariff) + (nightKwh * nightTariff)) * seasonFactor * houseMode;
+
+        report += `${index + 1}. ${item.name || "Без названия"}\n`;
+        report += `   Помещение: ${item.room}\n`;
+        report += `   Мощность: ${item.power} Вт\n`;
+        report += `   Количество: ${item.qty}\n`;
+        report += `   Часов днём: ${item.dayHours}\n`;
+        report += `   Часов ночью: ${item.nightHours}\n`;
+        report += `   Дней в месяц: ${item.days}\n`;
+        report += `   Дневное потребление: ${formatNumber(adjDayKwh, 2)} кВт·ч\n`;
+        report += `   Ночное потребление: ${formatNumber(adjNightKwh, 2)} кВт·ч\n`;
+        report += `   Стоимость в месяц: ${formatNumber(monthlyCost, 2)} ₽\n\n`;
+      });
+
+      report += "ИТОГОВЫЕ ПОКАЗАТЕЛИ\n";
+      report += "-----------------------------------------------------\n";
+      report += `Общий расход в сутки: ${dailyKwhEl.textContent} кВт·ч\n`;
+      report += `Общий расход в месяц: ${monthlyKwhEl.textContent} кВт·ч\n`;
+      report += `Дневное потребление в месяц: ${monthlyDayKwhEl.textContent} кВт·ч\n`;
+      report += `Ночное потребление в месяц: ${monthlyNightKwhEl.textContent} кВт·ч\n`;
+      report += `Расход в год: ${yearlyKwhEl.textContent} кВт·ч\n`;
+      report += `Стоимость в месяц: ${monthlyCostEl.textContent} ₽\n`;
+      report += `Стоимость в год: ${yearlyCostEl.textContent} ₽\n`;
+      report += `Пиковая нагрузка: ${peakLoadEl.textContent} кВт\n`;
+
+      const blob = new Blob([report], { type: "text/plain;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "electricity-calculator-day-night-tariff.txt";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+
+      URL.revokeObjectURL(url);
+    }
+
+    dayTariffInput.addEventListener("input", calculateAll);
+    nightTariffInput.addEventListener("input", calculateAll);
+    seasonFactorInput.addEventListener("input", calculateAll);
+    houseModeSelect.addEventListener("change", calculateAll);
+    reserveInput.addEventListener("input", calculateAll);
+
+    addRowBtn.addEventListener("click", () => {
+      addDeviceRow({
+        name: "",
+        room: "",
+        power: 100,
+        qty: 1,
+        dayHours: 1,
+        nightHours: 0,
+        days: 30
+      });
+    });
+
+    recalcBtn.addEventListener("click", calculateAll);
+    fillExampleBtn.addEventListener("click", fillExample);
+    downloadBtn.addEventListener("click", downloadReport);
+    printBtn.addEventListener("click", () => window.print());
+
+    clearBtn.addEventListener("click", () => {
+      if (confirm("Удалить все приборы из таблицы?")) {
+        clearAllRows();
+      }
+    });
+
+    renderPresetButtons();
+
+    addDeviceRow({ name: "Холодильник", room: "Кухня", power: 150, qty: 1, dayHours: 16, nightHours: 8, days: 30 });
+    addDeviceRow({ name: "Освещение LED", room: "Дом", power: 12, qty: 12, dayHours: 1, nightHours: 4, days: 30 });
+    addDeviceRow({ name: "Телевизор", room: "Гостиная", power: 120, qty: 1, dayHours: 4, nightHours: 0, days: 30 });
+
+    calculateAll();
+  </script>
+</body>
+</html>

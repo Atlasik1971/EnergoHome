@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Энергодом — калькулятор расхода электроэнергии для загородного дома</title>
+  <meta name="description" content="Бесплатный калькулятор: дневной и ночной тариф, помещения, пиковая нагрузка, печать и экспорт расчёта." />
+  <!-- Тема до отрисовки страницы (без «мигания» светлого фона) -->
+  <script>
+    (function () {
+      var k = "eco-calc-theme";
+      var s = localStorage.getItem(k);
+      var darkMq = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+      var t = s || (darkMq ? "dark" : "light");
+      document.documentElement.setAttribute("data-theme", t);
+    })();
+  </script>
+  <style>
+    :root{
+      --bg:#f3f6fb;
+      --card:#ffffff;
+      --text:#16202f;
+      --muted:#6b7280;
+      --line:#dde6f0;
+      --blue:#2563eb;
+      --blue-dark:#1d4ed8;
+      --green:#059669;
+      --shadow:0 12px 30px rgba(15,23,42,.08);
+      --radius:20px;
+    }
+
+    [data-theme="dark"]{
+      --bg:#0b1220;
+      --card:#151d2e;
+      --text:#e8edf5;
+      --muted:#94a3b8;
+      --line:#2d3a52;
+      --blue:#3b82f6;
+      --blue-dark:#2563eb;
+      --green:#34d399;
+      --shadow:0 12px 40px rgba(0,0,0,.45);
+    }
+
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family:Arial, Helvetica, sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(circle at top right, rgba(37,99,235,.08), transparent 25%),
+        linear-gradient(180deg, #eef4ff 0%, var(--bg) 38%);
+      min-height:100vh;
+    }
+    [data-theme="dark"] body{
+      background:
+        radial-gradient(circle at top right, rgba(59,130,246,.12), transparent 28%),
+        linear-gradient(180deg, #0f172a 0%, var(--bg) 45%);
+    }
+
+    .wrap{
+      max-width:1100px;
+      margin:0 auto;
+      padding:28px 24px 120px;
+    }
+
+    header{
+      display:flex;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+      margin-bottom:32px;
+    }
+    .logo{
+      font-weight:800;
+      font-size:20px;
+      letter-spacing:.02em;
+    }
+    .logo span{
+      color:var(--blue);
+    }
+    .header-actions{
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+    .header-actions a{
+      font-weight:700;
+      color:var(--blue);
+      text-decoration:none;
+      font-size:15px;
+    }
+    .header-actions a:hover{
+      text-decoration:underline;
+    }
+
+    .hero{
+      background:linear-gradient(135deg, #1d4ed8 0%, #2563eb 45%, #60a5fa 100%);
+      color:#fff;
+      border-radius:28px;
+      padding:40px 32px;
+      box-shadow:var(--shadow);
+      margin-bottom:28px;
+    }
+    .hero h1{
+      margin:0 0 12px;
+      font-size:clamp(26px, 4vw, 38px);
+      line-height:1.15;
+    }
+    .hero p{
+      margin:0;
+      max-width:720px;
+      font-size:17px;
+      line-height:1.55;
+      opacity:.95;
+    }
+    .cta-row{
+      margin-top:24px;
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+      align-items:center;
+    }
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      border:none;
+      border-radius:14px;
+      padding:14px 22px;
+      font-size:15px;
+      font-weight:800;
+      cursor:pointer;
+      text-decoration:none;
+      transition:transform .2s, background .2s;
+    }
+    .btn:hover{ transform:translateY(-1px); }
+    .btn-primary{
+      background:#fff;
+      color:#1d4ed8;
+    }
+    .btn-primary:hover{
+      background:#eff6ff;
+    }
+    .btn-ghost{
+      background:rgba(255,255,255,.2);
+      color:#fff;
+      border:1px solid rgba(255,255,255,.45);
+    }
+    .btn-ghost:hover{
+      background:rgba(255,255,255,.3);
+    }
+
+    h2{
+      margin:0 0 8px;
+      font-size:22px;
+    }
+    .section-lead{
+      margin:0 0 20px;
+      color:var(--muted);
+      font-size:15px;
+      line-height:1.5;
+      max-width:720px;
+    }
+
+    .features{
+      display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));
+      gap:16px;
+      margin-bottom:28px;
+    }
+    .feature{
+      background:var(--card);
+      border:1px solid rgba(221,230,240,.9);
+      border-radius:var(--radius);
+      padding:20px;
+      box-shadow:var(--shadow);
+    }
+    [data-theme="dark"] .feature{
+      border-color:var(--line);
+    }
+    .feature h3{
+      margin:0 0 8px;
+      font-size:17px;
+    }
+    .feature p{
+      margin:0;
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.5;
+    }
+
+    .panel{
+      background:var(--card);
+      border:1px solid rgba(221,230,240,.9);
+      border-radius:var(--radius);
+      padding:24px;
+      box-shadow:var(--shadow);
+      margin-bottom:24px;
+    }
+    [data-theme="dark"] .panel{
+      border-color:var(--line);
+    }
+    .panel h2{
+      margin-bottom:10px;
+    }
+    .steps{
+      margin:0;
+      padding-left:20px;
+      color:var(--muted);
+      line-height:1.65;
+      font-size:15px;
+    }
+    .steps li{
+      margin-bottom:6px;
+    }
+
+    footer{
+      font-size:13px;
+      color:var(--muted);
+      line-height:1.55;
+      padding-top:8px;
+      border-top:1px dashed var(--line);
+    }
+
+    /* Та же кнопка темы, что и на странице калькулятора — единый UX */
+    .theme-toggle{
+      position:fixed;
+      right:20px;
+      bottom:20px;
+      z-index:1000;
+      width:52px;
+      height:52px;
+      border-radius:50%;
+      border:1px solid var(--line);
+      background:var(--card);
+      color:var(--text);
+      box-shadow:var(--shadow);
+      cursor:pointer;
+      font-size:22px;
+      line-height:1;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      transition:transform .2s;
+    }
+    .theme-toggle:hover{
+      transform:translateY(-2px);
+    }
+
+    @media (max-width:600px){
+      .hero{ padding:28px 22px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <!-- Логотип-название проекта (текстом, без картинок) -->
+      <div class="logo">Энерго<span>дом</span></div>
+      <div class="header-actions">
+        <a href="calculator.html">Открыть калькулятор →</a>
+      </div>
+    </header>
+
+    <section class="hero" aria-labelledby="hero-title">
+      <h1 id="hero-title">Оцените расход электроэнергии загородного дома за минуты</h1>
+      <p>
+        Учитывайте дневной и ночной тариф, режим проживания и сезонный коэффициент.
+        Получите помесячную стоимость, пиковую нагрузку и наглядную разбивку по помещениям —
+        всё работает в браузере, без регистрации.
+      </p>
+      <div class="cta-row">
+        <!-- Основной призыв: переход к полному функционалу -->
+        <a class="btn btn-primary" href="calculator.html">Рассчитать сейчас</a>
+        <a class="btn btn-ghost" href="calculator.html#start-calc">Сразу к параметрам расчёта</a>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="how-title">
+      <h2 id="how-title">Как пользоваться</h2>
+      <p class="section-lead">
+        Короткий сценарий: тарифы → приборы → итоги. При необходимости распечатайте или скачайте текстовый отчёт.
+      </p>
+      <ol class="steps">
+        <li>Укажите дневной и ночной тариф, коэффициенты и запас по мощности.</li>
+        <li>Добавьте приборы вручную или из готовых пресетов.</li>
+        <li>Смотрите итоги справа: график день/ночь, стоимость, разрез по комнатам.</li>
+      </ol>
+    </section>
+
+    <section aria-labelledby="feat-title">
+      <h2 id="feat-title">Возможности калькулятора</h2>
+      <p class="section-lead">
+        Всё, что нужно для ориентировочного бюджета по электричеству в частном доме или даче.
+      </p>
+      <div class="features">
+        <article class="feature">
+          <h3>Два тарифа</h3>
+          <p>Отдельный расчёт дневного и ночного потребления и стоимости по каждому периоду.</p>
+        </article>
+        <article class="feature">
+          <h3>Помещения и пик</h3>
+          <p>Сводка по комнатам и оценка пиковой нагрузки с учётом вашего запаса в процентах.</p>
+        </article>
+        <article class="feature">
+          <h3>Экспорт и печать</h3>
+          <p>Скачивание расчёта в .txt и печать страницы в PDF через диалог браузера.</p>
+        </article>
+      </div>
+    </section>
+
+    <footer>
+      Проект «Энергодом»: статический сайт — откройте <code>index.html</code> локально или разместите файлы на любом хостинге.
+      Перейти к <a href="calculator.html">калькулятору</a>.
+    </footer>
+  </div>
+
+  <!-- Переключение светлой / тёмной темы (правый нижний угол) -->
+  <button type="button" class="theme-toggle" id="themeToggle" title="Светлая / тёмная тема"></button>
+
+  <script>
+    (function () {
+      var key = "eco-calc-theme";
+      var btn = document.getElementById("themeToggle");
+      function current() {
+        return document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light";
+      }
+      function sync() {
+        var t = current();
+        btn.textContent = t === "dark" ? "\u2600" : "\u263D";
+        btn.setAttribute(
+          "aria-label",
+          t === "dark" ? "Включить светлую тему" : "Включить тёмную тему"
+        );
+      }
+      btn.addEventListener("click", function () {
+        var next = current() === "dark" ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", next);
+        try { localStorage.setItem(key, next); } catch (e) {}
+        sync();
+      });
+      sync();
+    })();
+  </script>
+</body>
+</html>
